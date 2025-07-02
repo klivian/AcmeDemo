@@ -75,8 +75,8 @@ public with sharing class ContentDocumentLinkTriggerHandlerTest
         ContentDocumentLink link = new ContentDocumentLink(
         LinkedEntityId = wo.Id,
         ContentDocumentId = doc.Id,
-        ShareType='V',
-        Visibility='InternalUsers'
+        ShareType='V'
+        //Visibility='AllUsers'
         );
 
         List<Work_Order_Attached_Image__c> attachedimages = [SELECT Id, Work_Order__c, Image_RTF__c from Work_Order_Attached_Image__c];
