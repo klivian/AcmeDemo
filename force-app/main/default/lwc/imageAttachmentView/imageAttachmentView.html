@@ -1,0 +1,11 @@
+<template>
+    <lightning-card title={listlabel}>
+        <ul class="slds-var-m-around_medium">
+            <template for:each={images.data} for:item="image">
+                    <li key={image.Id}>
+                        <lightning-formatted-rich-text value={image.Image_RTF__c}></lightning-formatted-rich-text>
+                    </li>
+            </template>
+        </ul>
+    </lightning-card>
+</template>

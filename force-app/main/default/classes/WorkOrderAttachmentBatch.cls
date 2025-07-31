@@ -13,7 +13,7 @@ public with sharing class WorkOrderAttachmentBatch implements Database.Batchable
         contentVersionIds = new List<Id>();
         this.workOrders = workOrders;
         this.docToEntityMap = docToEntityMap;
-        baseURL = ([Select Value__c from AWS_Setting__mdt where Developername = 'S3_Bucket_Name']).Value__c + '.s3.amazonaws.com';
+        baseURL = ([Select Value__c from AWS_Setting__mdt where Developername = 'S3_Bucket_Name']).Value__c + '.s3.eu-west-2.amazonaws.com';
     }
 
     public Database.QueryLocator start(Database.BatchableContext bc)
@@ -89,4 +89,6 @@ public with sharing class WorkOrderAttachmentBatch implements Database.Batchable
         S3UploadHandler handler = new S3UploadHandler(contentVersionIds);
         Database.executeBatch(handler);
     }
+
+
 }

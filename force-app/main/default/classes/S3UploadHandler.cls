@@ -10,6 +10,7 @@ public with sharing class S3UploadHandler implements Database.Batchable<sObject>
 
     public S3UploadHandler(List<Id> contentVersionIDs)
     {
+        System.debug('ZXZX At least we are in the handler');
         this.versionIds = contentVersionIDs;
         this.endpointURL = ([Select Value__c from AWS_Setting__mdt where Developername = 'Image_Handler_Endpoint']).Value__c;
         this.bucketName = ([Select Value__c from AWS_Setting__mdt where Developername = 'S3_Bucket_Name']).Value__c;
@@ -30,13 +31,14 @@ public with sharing class S3UploadHandler implements Database.Batchable<sObject>
 
     public void finish(Database.BatchableContext bc)
     {
-       
+
     }
 
     public List<HTTPResponse> performCallout(List<SObject> versionList)
     {
+        System.debug('ZXZX performCallout - ' + versionList);
         List<ContentVersion> versions = new List<ContentVersion>();
-        
+
         if(versionList.size() > 0 )
         {
             String versionId = versionList[0].Id;
@@ -44,10 +46,11 @@ public with sharing class S3UploadHandler implements Database.Batchable<sObject>
                                              FROM ContentVersion
                                              WHERE Id = :versionId ];
         }
+
         List<HttpResponse> responses = new List<HttpResponse>();
-     
+
         try
-        {    
+        {
             if(versions != null && versions.size() > 0)
             {
                 for(Integer j=0; j < versions.size(); j++)
@@ -56,25 +59,31 @@ public with sharing class S3UploadHandler implements Database.Batchable<sObject>
                     HttpRequest req = new HttpRequest();
                     req.setMethod('PUT');
                     req.setEndpoint('callout:S3Callout' + '/' + image.Id +  '_' + image.PathOnClient.replaceAll('\\s+','').toLowerCase());   //strip spaces from filenames
-                    req.setHeader('Host', bucketname + '.' + endpointURL);
-                    req.setHeader('Content-Length', String.valueOf(image.ContentSize));
-                    req.setHeader('Content-Encoding', 'UTF-8');
+                    /*
+                    String filename = image.PathOnClient.substringAfterLast('/').substringAfterLast('\\');
+                    String objectKey = image.Id + '_' + filename.replaceAll('\\s+', '').toLowerCase();
+                    String encodedKey = EncodingUtil.urlEncode(objectKey, 'UTF-8');
+
+                    req.setEndpoint('callout:S3Callout/' + encodedKey);
+                    */
+                    //req.setHeader('Host', bucketname + '.' + endpointURL);
+                    //req.setHeader('Content-Length', String.valueOf(image.ContentSize));
+                    //req.setHeader('Content-Encoding', 'UTF-8');
                     req.setHeader('Content-type', image.fileType);
-                    req.setHeader('Connection', 'keep-alive');
-                    req.setHeader('Date', Datetime.now().formatGMT('EEE, dd MMM yyyy HH:mm:ss z'));
-                    req.setHeader('ACL', 'public-read-write');
+                    //req.setHeader('Connection', 'keep-alive');
+                    //req.setHeader('Date', Datetime.now().formatGMT('EEE, dd MMM yyyy HH:mm:ss z'));
+                    //req.setHeader('ACL', 'public-read-write');
+                    //req.setHeader('x-amz-acl', 'public-read');
                     req.setBodyAsBlob(image.VersionData);
                     System.debug('ZXZX request - ' + req);
 
                     Http http = new Http();
                     HTTPResponse res = http.send(req);
-                    
-                    System.debug('>>>> The response');
-                    System.debug(res);
-                    System.debug('>>>> The body');
-                    System.debug(res.getBody());
-                    System.debug('>>>> Status code');
-                    System.debug(res.getStatusCode());
+
+                    System.debug('>>>> The response - ' + res);
+                    System.debug('>>>> The body - ' + res.getBody());
+                    System.debug('>>>> Status code - ' + res.getStatusCode());
+
 
                     responses.add(res);
                 }
